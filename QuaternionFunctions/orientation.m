@@ -59,29 +59,35 @@ f = 1/(imu.t(2) - imu.t(1));
       
         %normalize q
         q(i,:) = quatnormalize2(q(i,:));
-        
+        qrotV(i,:) = quatrotate2(q(i,:),Vect);
         % METHOD 2 Start --------------------------------------------------
 %         if (mag(a0-Acc) < mag(Acc) && mag(Acc) < mag(a0+Acc) && ...
 %             acos(abs(kg)) < theta) || ...
 %            (mag(a0-Acc) < mag(Acc) && mag(Acc) < mag(a0+Acc) && ...
 %             mag(AngV) < AngV)
+        R(1,:) = [0 0 0 0];
+        RT(1,:) = [0 0 0 0];
         if (abs(norm(grav)- norm(Acc)) < errA && acos(abs(Acc(1,3)))-theta0 < errTheta) || ...
            (abs(norm(grav)- norm(Acc)) < errA && abs(norm(angAcc)-norm(AngV)) < errOmega) 
+%             disp('here1');
             oldQ = q(i,:);
+%             disp(quatrotate2(oldQ,Vect));
             % Same here, Acc is only 1x3
             A = quatmultiply2(quatmultiply2(q(i,:), [0, Acc]), quatinv2(q(i,:)));
             Psi = [1, A(3)/2, -A(1)/2, 0];
             q(i,:) = quatmultiply2(Psi, oldQ);
+            qrotV(i,:) = quatrotate2(q(i,:),Vect);
+%             disp('here2');
+%             disp(qrotV(i,:));
         end
         % METHOD 2 End ----------------------------------------------------
 
 % %        theta = acos(((dot(P,Q))/(mag(P)*mag(Q))));        
 % %        u = cos(theta/2) + sin(theta/2) * ((ii+jj+kk)/mag(Q));
 % %        [EMx EMy EMz] = EulerMat([ii jj kk]);
-        
-        qrotV(i,:) = quatrotate2(q(i,:),Vect);
-    end
 
+    end
+    
     qrotA = q;
     [yaw,pitch,roll] = quat2angle2(q);
     orient = [roll pitch yaw];
